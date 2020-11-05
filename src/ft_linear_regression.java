@@ -60,7 +60,7 @@ class Line implements GLEventListener {
     }
 }
 
-public class Main {
+public class ft_linear_regression {
     public static void main(String[] args) {
         final GLProfile profile = GLProfile.get(GLProfile.GL2);
         GLCapabilities capabilities = new GLCapabilities(profile);
