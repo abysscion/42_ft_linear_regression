@@ -1,16 +1,23 @@
 ######################################################################################
-# (jdk installed env path to java.exe and javac.exe set)
+# (jdk installed env path to java and javac set)
 
-# Win build
-javac -classpath "jar/gluegen-rt.jar;jar/jogl-all.jar;" src/ft_linear_regression.java
+# Build
+./build
 
-# Win run
+# Run
+./run "argument"
+#####################################################################################
+# If it fails to recognize OSTYPE do this:
+
+# FOR WINDOWS (MSYS, FOR EXAMPLE)
+# Build
+javac -classpath "jar/gluegen-rt.jar;jar/jogl-all.jar" src/ft_linear_regression.java
+# Run
 java -classpath "jar/gluegen-rt.jar;jar/jogl-all.jar;src" ft_linear_regression
 
-######################################################################################
-# (idk yet)
 
-# Mac build
-same
-# Win run
-same
+# FOR MAC OS X
+# Build
+javac -classpath "jar/gluegen-rt.jar:jar/jogl-all.jar" src/ft_linear_regression.java
+# Run
+java -classpath "jar/gluegen-rt.jar:jar/jogl-all.jar:src" ft_linear_regression

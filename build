@@ -1,0 +1,7 @@
+if [[ "$OSTYPE" == "msys" ]]; then
+	javac -classpath "jar/gluegen-rt.jar;jar/jogl-all.jar" src/ft_linear_regression.java
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+	javac -classpath "jar/gluegen-rt.jar:jar/jogl-all.jar" src/ft_linear_regression.java
+else
+	echo "Can't recognize OSTYPE. Try to build manually!"
+fi
