@@ -24,7 +24,11 @@ public class predict {
             System.out.println("Error: wrong mileage format!");
         }
         catch (Exception e) {
-            System.out.println("Error: " + e.toString());
+            var msg = e.getMessage();
+            if (msg != null)
+                System.out.println("Error: " + msg);
+            else
+                System.out.println("Error: " + e.toString());
         }
     }
 

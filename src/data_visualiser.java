@@ -5,6 +5,8 @@ import com.jogamp.opengl.util.awt.TextRenderer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 
 class Background implements GLEventListener {
@@ -15,7 +17,7 @@ class Background implements GLEventListener {
         final GL2 gl = drawable.getGL().getGL2();
 
         gl.glBegin(GL2.GL_QUADS);
-        gl.glColor3f( .64f,.53f,.92f );
+        gl.glColor3f( 1f,1f,1f );
         gl.glVertex3f(-1f, -1f, 0);
         gl.glVertex3f(1f, -1f, 0);
         gl.glVertex3f(1f, 1f, 0);
@@ -60,9 +62,9 @@ class Line implements GLEventListener {
         gl.glLineWidth(width);
         gl.glBegin(GL2.GL_LINES);
         if (isAxis)
-            gl.glColor3f( 1f,1f,0f );
+            gl.glColor3f( 0f,0f,0f );
         else
-            gl.glColor3f( 0.5f,1f,1.0f );
+            gl.glColor3f( 0.25f,0.65f,1.0f );
         gl.glVertex3f(x0, y0, 0);
         gl.glVertex3f(x1, y1, 0);
         gl.glEnd();
@@ -82,14 +84,6 @@ class Circle implements GLEventListener {
     private final float cy;
     private final float r;
 
-    public Circle(float cx, float cy, float r, int detailLevel) {
-        this.cx = cx;
-        this.cy = cy;
-        this.r = r;
-        this.detailLevel = detailLevel;
-        this.isSpecial = false;
-    }
-
     public Circle(float cx, float cy, float r, int detailLevel, boolean isSpecial) {
         this.cx = cx;
         this.cy = cy;
@@ -105,9 +99,9 @@ class Circle implements GLEventListener {
         var detailFactor = twicePI/detailLevel;
 
         if (!isSpecial)
-            gl.glColor3f(1f, 1f, 0f);
+            gl.glColor3f(0.2f, 0.6f, 0.3f);
         else
-            gl.glColor3f(0f, 0.5f, 1f);
+            gl.glColor3f(1f, 0.5f, 0f);
         gl.glBegin(GL2.GL_TRIANGLE_FAN);
         gl.glVertex2f(cx, cy);
         for (var i = 0; i <= detailLevel; i++)
@@ -150,6 +144,7 @@ class Text implements GLEventListener {
         final GL2 gl = drawable.getGL().getGL2();
         var textRenderer = new TextRenderer(new Font("Arial", Font.BOLD, fontSize));
 
+        textRenderer.setColor(0f,0f,0f,1f);
         textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
         gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glPushMatrix();
@@ -170,14 +165,15 @@ class Text implements GLEventListener {
 
 public class data_visualiser {
     private static GLCanvas canvas;
+    private static int windowsCount;
 
     public static void showOriginalData(ArrayList<double[]> data, double minX, double minY, double maxX, double maxY) {
         init();
 
+        drawDataCircles(data, false);
         drawAxisesAndMarks();
         drawLinearRegression();
         drawOriginalDataText(minX, minY, maxX, maxY);
-        drawDataCircles(data, false);
         setAndShowWindow("Original data");
     }
 
@@ -192,25 +188,20 @@ public class data_visualiser {
             canvas.addGLEventListener(new Text(canW * 0.0125f, canH * 0.05f + (i * canH / 10.5f), 15, ("" + i * 0.1f).substring(0, 3)));
         }
 
+        drawDataCircles(data, false);
         drawAxisesAndMarks();
         drawLinearRegression();
-        drawDataCircles(data, false);
         setAndShowWindow("Standardized data");
     }
 
     public static void showPredictedOverOriginalData(ArrayList<double[]> data, ArrayList<double[]> predictionsData, double minX, double minY, double maxX, double maxY) {
         init();
 
-        var canW = canvas.getSize().width * 0.9f;
-        var canH = canvas.getSize().height * 0.9f;
-        var stepX = (maxX - minX) / 10;
-        var stepY = (maxY - minY) / 10;
-
+        drawDataCircles(data, false);
+        drawDataCircles(predictionsData, true);
         drawAxisesAndMarks();
         drawLinearRegression();
         drawOriginalDataText(minX, minY, maxX, maxY);
-        drawDataCircles(data, false);
-        drawDataCircles(predictionsData, true);
         setAndShowWindow("Predicted over standardized data");
     }
 
@@ -225,10 +216,19 @@ public class data_visualiser {
 
     private static void setAndShowWindow(String name) {
         final JFrame frame = new JFrame(name);
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                if (windowsCount == 1)
+                    System.exit(0);
+                else
+                    windowsCount--;
+            }
+        });
         frame.getContentPane().add(canvas);
         frame.setSize(frame.getContentPane().getPreferredSize());
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+        windowsCount++;
     }
 
     private static void drawOriginalDataText(double minX, double minY, double maxX, double maxY) {
@@ -261,7 +261,7 @@ public class data_visualiser {
         canvas.addGLEventListener(new Line(
                 -0.9f + 0 * 2f * 0.9f, -0.9f + (float) train.estimatePrice(0) * 2f * 0.9f,
                 -0.9f + 1 * 2f * 0.9f, -0.9f + (float) train.estimatePrice(1) * 2f * 0.9f,
-                2f,
+                3.5f,
                 false));
     }
 
@@ -287,7 +287,7 @@ public class data_visualiser {
         for (var dataEntry : data) {
             float scaledValX = -0.9f + ((float) dataEntry[0] * 2f) * 0.9f;
             float scaledValY = -0.9f + ((float) dataEntry[1] * 2f) * 0.9f;
-            canvas.addGLEventListener(new Circle(scaledValX, scaledValY, 0.01f, 16, isSpecial));
+            canvas.addGLEventListener(new Circle(scaledValX, scaledValY, 0.02f, 16, isSpecial));
         }
     }
 }

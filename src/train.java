@@ -1,4 +1,6 @@
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public class train {
@@ -24,6 +26,7 @@ public class train {
 
     public static void main(String[] args) {
         try {
+            disableAccessWarnings();
             if (args.length < 1)
                 printUsage();
             else {
@@ -35,14 +38,25 @@ public class train {
                 if (voFlag)
                     data_visualiser.showOriginalData(originalData, minX, minY, maxX, maxY);
                 if (vpFlag) {
-                    readData(false);
-                    standardizeData(predictsData);
-                    data_visualiser.showPredictedOverOriginalData(originalData, predictsData, minX, minY, maxX, maxY);
+                    if (!new File("predictsData.csv").exists()) {
+                        System.out.println("Error: predictsData.csv does not exists!");
+                        System.out.println("Tip: to use -vp flag you firstly should predict something...");
+                    }
+                    else {
+                        readData(false);
+                        standardizeData(predictsData);
+                        data_visualiser.showPredictedOverOriginalData(originalData, predictsData, minX, minY, maxX, maxY);
+                    }
                 }
             }
         }
         catch (Exception e) {
-            System.out.println("Error happened! The message is: \n" + e.toString());
+            var msg = e.getMessage();
+            if (msg != null)
+                System.out.println("Error: " + msg);
+            else
+                System.out.println("Error: " + e.toString());
+//            e.printStackTrace();
         }
     }
 
@@ -147,26 +161,36 @@ public class train {
     }
 
     private static void readData(final boolean original) throws IOException {
-        var filePath = original ? "data.csv" : "predictsData.csv";
-        var reader = new BufferedReader(new FileReader(filePath));
-        var line = "";
+        try {
+            var filePath = original ? "data.csv" : "predictsData.csv";
+            var reader = new BufferedReader(new FileReader(filePath));
+            var line = "";
 
-        if (original)
-            originalData = new ArrayList<>();
-        else
-            predictsData = new ArrayList<>();
-        if (reader.readLine() != null) {
-            while ((line = reader.readLine()) != null) {
-                var dataEntry = line.split(",");
-                var dataCell = new double[2];
+            if (original)
+                originalData = new ArrayList<>();
+            else
+                predictsData = new ArrayList<>();
+            if (reader.readLine() != null) {
+                while ((line = reader.readLine()) != null) {
+                    var dataEntry = line.split(",");
+                    var dataCell = new double[2];
 
-                dataCell[0] = Double.parseDouble(dataEntry[0]);
-                dataCell[1] = Double.parseDouble(dataEntry[1]);
-                if (original)
-                    originalData.add(dataCell);
-                else
-                    predictsData.add(dataCell);
+                    dataCell[0] = Double.parseDouble(dataEntry[0]);
+                    dataCell[1] = Double.parseDouble(dataEntry[1]);
+                    if (original)
+                        originalData.add(dataCell);
+                    else
+                        predictsData.add(dataCell);
+                }
             }
+        }
+        catch (IOException e) {
+            System.out.println("Error: unable to read or write data file!");
+//            e.printStackTrace();
+        }
+        catch (NumberFormatException e) {
+            System.out.println("Error: wrong symbols in data file [" + (original ? "data.csv" : "predictsData.csv") + "]");
+//            e.printStackTrace();
         }
     }
 
@@ -232,6 +256,25 @@ public class train {
                     }
                     break;
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void disableAccessWarnings() {
+        try {
+            Class unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field field = unsafeClass.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            Object unsafe = field.get(null);
+
+            Method putObjectVolatile = unsafeClass.getDeclaredMethod("putObjectVolatile", Object.class, long.class, Object.class);
+            Method staticFieldOffset = unsafeClass.getDeclaredMethod("staticFieldOffset", Field.class);
+
+            Class loggerClass = Class.forName("jdk.internal.module.IllegalAccessLogger");
+            Field loggerField = loggerClass.getDeclaredField("logger");
+            Long offset = (Long) staticFieldOffset.invoke(unsafe, loggerField);
+            putObjectVolatile.invoke(unsafe, loggerClass, offset, null);
+        } catch (Exception ignored) {
         }
     }
 
