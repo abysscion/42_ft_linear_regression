@@ -160,28 +160,29 @@ public class train {
         return lrFlag * (tmpSum / (originalData.size()));
     }
 
-    private static void readData(final boolean original) throws IOException {
+    private static void readData(final boolean original) {
         try {
             var filePath = original ? "data.csv" : "predictsData.csv";
             var reader = new BufferedReader(new FileReader(filePath));
             var line = "";
 
-            if (original)
+            if (original) {
                 originalData = new ArrayList<>();
-            else
+                reader.readLine();
+            } else
                 predictsData = new ArrayList<>();
-            if (reader.readLine() != null) {
-                while ((line = reader.readLine()) != null) {
-                    var dataEntry = line.split(",");
-                    var dataCell = new double[2];
 
-                    dataCell[0] = Double.parseDouble(dataEntry[0]);
-                    dataCell[1] = Double.parseDouble(dataEntry[1]);
-                    if (original)
-                        originalData.add(dataCell);
-                    else
-                        predictsData.add(dataCell);
-                }
+            while ((line = reader.readLine()) != null) {
+                var dataEntry = line.split(",");
+                var dataCell = new double[2];
+
+                dataCell[0] = Double.parseDouble(dataEntry[0]);
+                dataCell[1] = Double.parseDouble(dataEntry[1]);
+                if (original)
+                    originalData.add(dataCell);
+                else
+                    predictsData.add(dataCell);
+
             }
         }
         catch (IOException e) {
