@@ -1,29 +1,34 @@
+import java.io.*;
+
 public class predict {
-    private double theta0;
-    private double theta1;
-    private double tmpTheta0;
-    private double tmpTheta1;
-    private double lastMSE;
-    private double curMSE;
-    private double deltaMSE;
+    private static int mileageToPredict;
 
     public static void main(String[] args) {
         try {
-            if (args.length < 1)
-                PrintUsage();
-            else
-                ProcessArguments(args);
+            System.out.print("Enter mileage to predict price: ");
+            var inputReader = new BufferedReader(new InputStreamReader(System.in));
+            validateMileage(inputReader.readLine());
+            var fileReader = new BufferedReader(new FileReader("model.csv"));
+            var readData = fileReader.readLine().split(",");
+            var predictedPrice = Double.parseDouble(readData[0]) + Double.parseDouble(readData[1]) * mileageToPredict;
+            System.out.println(predictedPrice);
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("0");
+        }
+        catch (NumberFormatException e) {
+            System.out.println("Error: wrong mileage format!");
         }
         catch (Exception e) {
-            System.out.println("Error happened! The message is: \n" + e.toString());
+            System.out.println("Error: " + e.toString());
         }
     }
 
-    private static void ProcessArguments(String[] args) {
-        
-    }
+    private static void validateMileage(String mileage) throws Exception {
+        var mlg = Integer.parseInt(mileage);
 
-    private static void PrintUsage() {
-        System.out.println("Usage: predict <desired numeric mileage to predict>");
+        if (mlg < 0)
+            throw new Exception("mileage can't be negative!");
+        mileageToPredict = mlg;
     }
 }

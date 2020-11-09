@@ -1,0 +1,7 @@
+if [[ "$OSTYPE" == "msys" ]]; then
+	java -classpath "jar/gluegen-rt.jar;jar/jogl-all.jar;src" predict "${@:1}"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+	java -classpath "jar/gluegen-rt.jar:jar/jogl-all.jar:src" predict "${@:1}"
+else
+	echo "Can't recognize OSTYPE. Try to run manually!"
+fi
