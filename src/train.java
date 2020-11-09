@@ -40,10 +40,10 @@ public class train {
                 if (vpFlag) {
                     if (!new File("predictsData.csv").exists()) {
                         System.out.println("Error: predictsData.csv does not exists!");
-                        System.out.println("Tip: to use -vp flag you firstly should predict something...");
+                        System.out.println("Tip: before using -vp flag you firstly should predict something...");
                     }
                     else {
-                        readData(false);
+                        readData("predictsData.csv", false);
                         standardizeData(predictsData);
                         data_visualiser.showPredictedOverOriginalData(originalData, predictsData, minX, minY, maxX, maxY);
                     }
@@ -56,7 +56,6 @@ public class train {
                 System.out.println("Error: " + msg);
             else
                 System.out.println("Error: " + e.toString());
-//            e.printStackTrace();
         }
     }
 
@@ -64,7 +63,7 @@ public class train {
         return ((tmpTheta0 + (tmpTheta1 * mileage)));
     }
 
-    private static void init(String fileName) throws Exception{
+    private static void init(String dataPath) throws Exception{
         if (!lrSet)
             lrFlag = 1.0f;
         minX = minY = Integer.MAX_VALUE;
@@ -74,7 +73,7 @@ public class train {
         tmpTheta0 = 0.0;
         tmpTheta1 = 0.0;
         lastMSE = 0.0;
-        readData(true);
+        readData(dataPath, true);
         curMSE = calculateMSE();
         deltaMSE = curMSE;
     }
@@ -160,10 +159,11 @@ public class train {
         return lrFlag * (tmpSum / (originalData.size()));
     }
 
-    private static void readData(final boolean original) {
+    private static void readData(String dataPath, final boolean original) throws Exception {
         try {
-            var filePath = original ? "data.csv" : "predictsData.csv";
-            var reader = new BufferedReader(new FileReader(filePath));
+            if (!new File(dataPath).exists())
+                throw new Exception("file [" + dataPath + "] not found!");
+            var reader = new BufferedReader(new FileReader(dataPath));
             var line = "";
 
             if (original) {
@@ -182,16 +182,13 @@ public class train {
                     originalData.add(dataCell);
                 else
                     predictsData.add(dataCell);
-
             }
         }
         catch (IOException e) {
-            System.out.println("Error: unable to read or write data file!");
-//            e.printStackTrace();
+            throw new Exception("unable to read or write data file!");
         }
         catch (NumberFormatException e) {
-            System.out.println("Error: wrong symbols in data file [" + (original ? "data.csv" : "predictsData.csv") + "]");
-//            e.printStackTrace();
+            throw new Exception("wrong symbols in data file [" + (original ? "data.csv" : "predictsData.csv") + "]");
         }
     }
 
@@ -249,11 +246,11 @@ public class train {
                             throw new Exception("unknown argument provided or file path is not last argument");
                         var file = new File(argument);
                         if (!file.exists())
-                            throw new Exception("File [" + argument + "] does not exist!");
+                            throw new Exception("file [" + argument + "] does not exist!");
                         if (argument.length() < 4)
-                            throw new Exception("File [" + argument + "] is not a .csv file dataset!");
+                            throw new Exception("file [" + argument + "] is not a .csv file dataset!");
                         if (argument.substring(argument.length() - 4).compareTo(".csv") != 0)
-                            throw new Exception("File [" + argument + "] has wrong extension!");
+                            throw new Exception("file [" + argument + "] has wrong extension!");
                     }
                     break;
             }
