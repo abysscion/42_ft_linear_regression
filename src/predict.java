@@ -12,6 +12,10 @@ public class predict {
             var readData = fileReader.readLine().split(",");
             var predictedPrice = Double.parseDouble(readData[0]) + Double.parseDouble(readData[1]) * mileageToPredict;
             System.out.println(predictedPrice);
+            var writer = new FileWriter("predictsData.csv", true);
+            writer.write(mileageToPredict + "," + predictedPrice + "\n");
+            writer.flush();
+            writer.close();
         }
         catch (FileNotFoundException e) {
             System.out.println("0");
