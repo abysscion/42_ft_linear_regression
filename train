@@ -1,7 +1,8 @@
-if [[ "$OSTYPE" == "msys" ]]; then
+#!/bin/bash
+if [ "$OSTYPE" == "msys" -o "$OSTYPE" == "cygwin" ]; then
 	java -classpath "jar/gluegen-rt.jar;jar/jogl-all.jar;src" train "${@:1}"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+elif [ "$OSTYPE" == "darwin"* ]; then
 	java -classpath "jar/gluegen-rt.jar:jar/jogl-all.jar:src" train "${@:1}"
 else
-	echo "Can't recognize OSTYPE. Try to run manually!"
+	echo "Can't recognize OSTYPE. It wouldn't work on platforms other than Windows and Mac OS..."
 fi
